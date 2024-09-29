@@ -147,35 +147,20 @@ int main() {
     string input;
     vector<string> expressions;  // 입력된 수식을 저장할 벡터
 
-    while (1) {
+    while (true) {
         cout << "> ";
         getline(cin, input);
 
         // EOI가 입력 되었다면 계산 시작
         if (input == "EOI") {
-<<<<<<< HEAD
             break;  // 루프를 종료하고 계산으로 넘어감
         } else {
             expressions.push_back(input);  // 입력된 수식을 저장
-=======
-            for (const string& expr : expressions) {
-                vector<CharIntConstruct> postfix = make_postfix(expr); // 후위 표기법으로 변환
-                int result = evaluate_postfix(postfix); // 수식 계
-
-                cout << "결과: ";
-                if (result == -1) { // 계산 중 오류 출력
-                    cout << "오류" << endl;
-                } else {
-                    cout << result << endl;
-                }
-            }
-            break;
->>>>>>> origin/main
         }
     }
 
     // 모든 수식을 처리
-    for (const string& expr : expressions) { //expressions 벡터의 요소 개수만큼 반복
+    for (const string& expr : expressions) { // expressions 벡터 요소만큼 반복
         istringstream expr_stream(expr);
         vector<CharIntConstruct> postfix = make_postfix(expr_stream); // 후위 표기법으로 변환
         int result = evaluate_postfix(postfix); // 수식 계산
