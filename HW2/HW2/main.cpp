@@ -26,7 +26,7 @@ vector<CharIntConstruct> make_postfix(istream& ins) {
     stack<char> item; // 연산자를 저장할 스택
 
     char ch;
-    bool readingNumber = false;  // 숫자를 읽고 있는 중인지 확인
+    bool readingNumber = 0;  // 숫자를 읽고 있는 중인지 확인
     int number = 0;              // 읽은 숫자를 저장할 변수
 
     while (ins >> ch) {
@@ -36,7 +36,7 @@ vector<CharIntConstruct> make_postfix(istream& ins) {
         // 숫자를 처리
         if (ch >= '0' && ch <= '9') {  // 숫자인지 확인
             number = number * 10 + (ch - '0');  // 각 자리 수 계산
-            readingNumber = true;               // 숫자를 읽고 있음을 표시
+            readingNumber = 1;               // 숫자를 읽고 있음을 표시
         }
         // 연산자나 괄호가 나오면
         else {
@@ -44,7 +44,7 @@ vector<CharIntConstruct> make_postfix(istream& ins) {
             if (readingNumber) {
                 postfix.push_back({0, number, ' '});
                 number = 0;  // 숫자 초기화
-                readingNumber = false;
+                readingNumber = 0;
             }
 
             // 여는 괄호 처리
@@ -92,7 +92,7 @@ vector<CharIntConstruct> make_postfix(istream& ins) {
 
 bool evaluate_stack(stack<int>& numbers, const char symbol) {
     // 스택에 숫자 2개 이상이라고 가정
-    if (numbers.size() < 2) return false;
+    if (numbers.size() < 2) return 0;
 
     int value2 = numbers.top();
     numbers.pop();
@@ -105,18 +105,18 @@ bool evaluate_stack(stack<int>& numbers, const char symbol) {
         case '-': result = value1 - value2; break;
         case '*': result = value1 * value2; break;
         case '/':
-            if (value2 == 0) return false; // 0으로 나누기 방지
+            if (value2 == 0) return 0; // 0으로 나누기 방지
             result = value1 / value2;
             break;
         case '^':
             result = 1; // 제곱을 위한 초기값
             for (int i = 0; i < value2; ++i) result *= value1;
             break;
-        default: return false;
+        default: return 0;
     }
 
     numbers.push(result);
-    return true;
+    return 1;
 }
 
 int evaluate_postfix(const vector<CharIntConstruct>& postfix) {
