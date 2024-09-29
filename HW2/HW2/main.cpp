@@ -153,9 +153,24 @@ int main() {
 
         // EOI가 입력 되었다면 계산 시작
         if (input == "EOI") {
+<<<<<<< HEAD
             break;  // 루프를 종료하고 계산으로 넘어감
         } else {
             expressions.push_back(input);  // 입력된 수식을 저장
+=======
+            for (const string& expr : expressions) {
+                vector<CharIntConstruct> postfix = make_postfix(expr); // 후위 표기법으로 변환
+                int result = evaluate_postfix(postfix); // 수식 계
+
+                cout << "결과: ";
+                if (result == -1) { // 계산 중 오류 출력
+                    cout << "오류" << endl;
+                } else {
+                    cout << result << endl;
+                }
+            }
+            break;
+>>>>>>> origin/main
         }
     }
 
