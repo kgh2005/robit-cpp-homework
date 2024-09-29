@@ -151,7 +151,7 @@ int main() {
 
         // EOI가 입력 되었다면 계산 시작
         if (input == "EOI") {
-            for (const auto& expr : expressions) {
+            for (const string& expr : expressions) {
                 vector<CharIntConstruct> postfix = make_postfix(expr); // 후위 표기법으로 변환
                 int result = evaluate_postfix(postfix); // 수식 계
 
