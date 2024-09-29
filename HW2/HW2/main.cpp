@@ -21,61 +21,63 @@ int precedence(char item) {
 }
 
 // 후위 표기법 변환 함수
-vector<CharIntConstruct> make_postfix(const string& input) {
+vector<CharIntConstruct> make_postfix(istream& ins) {
     vector<CharIntConstruct> postfix; // 후위 표기법을 저장할 벡터
     stack<char> item; // 연산자를 저장할 스택
 
-    size_t i = 0; // 문자열 인덱스 초기화
+    char ch;
+    bool readingNumber = false;  // 숫자를 읽고 있는 중인지 확인
+    int number = 0;              // 읽은 숫자를 저장할 변수
 
-    while (i < input.size()) {
+    while (ins >> ch) {
         // 공백을 건너뛰기
-        while (i < input.size() && input[i] == ' ') {
-            i++;
-        }
-
-        if (i >= input.size()) break;
+        if (isspace(ch)) continue;
 
         // 숫자를 처리
-        if (isdigit(input[i])) {
-            int number = 0;
-            // 숫자를 계속 읽음
-            while (i < input.size() && isdigit(input[i])) {
-                number = number * 10 + (input[i] - '0'); // 각 자릿수 계산
-                i++;
-            }
-            postfix.push_back({0, number, ' '}); // 숫자 추가
+        if (ch >= '0' && ch <= '9') {  // 숫자인지 확인
+            number = number * 10 + (ch - '0');  // 각 자리 수 계산
+            readingNumber = true;               // 숫자를 읽고 있음을 표시
         }
-        // 여는 괄호 처리
-        else if (input[i] == '(') {
-            item.push('(');
-            i++;
-        }
-        // 닫는 괄호 처리
-        else if (input[i] == ')') {
-            while (!item.empty() && item.top() != '(') {
-                postfix.push_back({1, 0, item.top()}); // 스택에서 연산자 꺼내기
-                item.pop();
-            }
-            if (item.empty()) return {}; // 괄호 불일치 오류
-            item.pop(); // 여는 괄호 제거
-            i++;
-        }
-        // 연산자 처리
-        else if (input[i] == '+' || input[i] == '-' ||
-                 input[i] == '*' || input[i] == '/' ||
-                 input[i] == '^') {
-            char op = input[i];
-            while (!item.empty() && precedence(item.top()) >= precedence(op)) {
-                postfix.push_back({1, 0, item.top()}); // 스택에서 연산자 꺼내기
-                item.pop();
-            }
-            item.push(op); // 연산자 스택에 추가
-            i++;
-        }
-        // 잘못된 입력 처리
+        // 연산자나 괄호가 나오면
         else {
-            return {}; // 잘못된 입력
+            // 숫자를 읽고 있으면, 숫자를 종료하고 벡터에 추가
+            if (readingNumber) {
+                postfix.push_back({0, number, ' '});
+                number = 0;  // 숫자 초기화
+                readingNumber = false;
+            }
+
+            // 여는 괄호 처리
+            if (ch == '(') {
+                item.push('(');
+            }
+            // 닫는 괄호 처리
+            else if (ch == ')') {
+                while (!item.empty() && item.top() != '(') {
+                    postfix.push_back({1, 0, item.top()}); // 스택에서 연산자 꺼내기
+                    item.pop();
+                }
+                if (item.empty()) return {}; // 괄호 불일치 오류
+                item.pop(); // 여는 괄호 제거
+            }
+            // 연산자 처리
+            else if (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^') {
+                while (!item.empty() && precedence(item.top()) >= precedence(ch)) {
+                    postfix.push_back({1, 0, item.top()}); // 스택에서 연산자 꺼내기
+                    item.pop();
+                }
+                item.push(ch); // 연산자 스택에 추가
+            }
+            // 잘못된 입력 처리
+            else {
+                return {}; // 잘못된 입력
+            }
         }
+    }
+
+    // 마지막으로 읽은 숫자가 있으면 추가
+    if (readingNumber) {
+        postfix.push_back({0, number, ' '});
     }
 
     // 남아 있는 연산자를 모두 처리
@@ -90,7 +92,7 @@ vector<CharIntConstruct> make_postfix(const string& input) {
 
 bool evaluate_stack(stack<int>& numbers, const char symbol) {
     // 스택에 숫자 2개 이상이라고 가정
-    if (numbers.size() < 2) return 0;
+    if (numbers.size() < 2) return false;
 
     int value2 = numbers.top();
     numbers.pop();
@@ -103,18 +105,18 @@ bool evaluate_stack(stack<int>& numbers, const char symbol) {
         case '-': result = value1 - value2; break;
         case '*': result = value1 * value2; break;
         case '/':
-            if (value2 == 0) return 0; // 0으로 나누기 방지
+            if (value2 == 0) return false; // 0으로 나누기 방지
             result = value1 / value2;
             break;
         case '^':
             result = 1; // 제곱을 위한 초기값
             for (int i = 0; i < value2; ++i) result *= value1;
             break;
-        default: return 0;
+        default: return false;
     }
 
     numbers.push(result);
-    return 1;
+    return true;
 }
 
 int evaluate_postfix(const vector<CharIntConstruct>& postfix) {
@@ -132,7 +134,7 @@ int evaluate_postfix(const vector<CharIntConstruct>& postfix) {
     }
 
     if (numbers.size() != 1) {
-        return -1; // 오류: 결과가 하나가 아님
+        return -1; // 오류
     }
 
     return numbers.top();
@@ -142,30 +144,33 @@ int main() {
     cout << "수식을 입력하세요." << endl;
     cout << "'EOI'를 입력하면 결과를 출력합니다." << endl;
 
-    vector<string> expressions; // 수식 저장할 벡터
-    string input; // 입력을 저장할 변수
+    string input;
+    vector<string> expressions;  // 입력된 수식을 저장할 벡터
 
-    while (true) {
+    while (1) {
         cout << "> ";
         getline(cin, input);
 
         // EOI가 입력 되었다면 계산 시작
         if (input == "EOI") {
-            for (const auto& expr : expressions) {
-                vector<CharIntConstruct> postfix = make_postfix(expr); // 후위 표기법으로 변환
-                int result = evaluate_postfix(postfix); // 수식 계
-
-                cout << "결과: ";
-                if (result == -1) { // 계산 중 오류 출력
-                    cout << "오류" << endl;
-                } else {
-                    cout << result << endl;
-                }
-            }
-            break;
+            break;  // 루프를 종료하고 계산으로 넘어감
+        } else {
+            expressions.push_back(input);  // 입력된 수식을 저장
         }
+    }
 
-        expressions.push_back(input);
+    // 모든 수식을 처리
+    for (const string& expr : expressions) { //expressions 벡터의 요소 개수만큼 반복
+        istringstream expr_stream(expr);
+        vector<CharIntConstruct> postfix = make_postfix(expr_stream); // 후위 표기법으로 변환
+        int result = evaluate_postfix(postfix); // 수식 계산
+
+        cout << "결과: ";
+        if (result == -1) { // 계산 중 오류 출력
+            cout << "오류" << endl;
+        } else {
+            cout << result << endl;
+        }
     }
 
     return 0;
